@@ -87,6 +87,8 @@ MNT_NAME=#{mnt_name}
 [[ `blkid | grep ${MNT_NAME:0:16} | grep #{fs_type}` ]] || mkfs.#{fs_type} -L #{mnt_name} #{device}
 echo "#{fs_type} creation return:  $?" >> disk_operation_log.txt
 <% if mount == true %>
+# if directory already exists, then copy over the contents into the new directory
+[ -d #{mnt_point} ] && mv #{mnt_point} #{mnt_point}_orig
 # Create mountpoint #{mnt_point}
 [ -d #{mnt_point} ] || mkdir -p #{mnt_point}
 # Update fstab with new mountpoint name
@@ -95,6 +97,8 @@ echo "fstab update returned:  $?" >> disk_operation_log.txt
 # Finally, mount the partition
 [[ `mount | grep #{mnt_point}` ]] || mount #{mnt_point}
 echo "#{mnt_point} mounting returned:  $?" >> disk_operation_log.txt
+# if we copied over the orig directory then copy its contents back
+[ -d #{mnt_point}_orig ] && cp -frp #{mnt_point}_orig/* #{mnt_point}/ && rm -fr #{mnt_point}_orig
 <% end %>
 <% end %>
 exit $?
